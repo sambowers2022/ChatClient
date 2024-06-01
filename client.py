@@ -1,5 +1,5 @@
 import socket
-import threading
+import multiprocessing
 from login import login
 HOST = "127.0.0.1"  # The server's hostname or IP address
 PORT = 65432  # The port used by the server
@@ -16,10 +16,19 @@ with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
         def read_messages():
             while True:
                 print(s.recv(1024).decode())
-        thread = threading.Thread(target=read_messages)
-        thread.start()
 
-        while True:
-            msg = input("Enter a message: ")
-            s.sendall(str.encode(msg))
-           
+        process = multiprocessing.Process(target=read_messages)
+        process.start()
+        
+        try:
+            while True:
+                msg = input("Enter a message: ")
+                s.sendall(str.encode(msg))
+        except KeyboardInterrupt:
+            # TODO Fix closing connection
+            
+            print("Closing connection")
+            process.terminate()
+            s.close()
+            print("Connection closed")
+            exit()
