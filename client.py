@@ -1,4 +1,5 @@
 import socket
+import hashlib
 import multiprocessing
 
 class SocketClient:
@@ -9,9 +10,10 @@ class SocketClient:
         self.socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.socket.connect((self.host, self.port))
 
-    def auth(self, auth):
+    def auth(self, opt, usr, pwd):
         if self.socket is not None:
-            self.socket.sendall(str.encode(auth))
+            msg = f"{opt},{usr},{hashlib.sha256(pwd.encode()).hexdigest()}"
+            self.socket.sendall(str.encode(msg))
             code = int.from_bytes(self.socket.recv(3))
             return code
 
